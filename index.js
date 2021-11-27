@@ -12,8 +12,10 @@ const tasksList = [
     ];
 
 const todoList = document.querySelector(".todo-list");
-const newTodo = document.querySelector(".new-todo")
+const newTodo = document.querySelector(".new-todo");
+const todoapp = document.querySelector(".todoapp");
 
+document.addEventListener("click", deleteTask);
 function renderTasks(arr) {
     /* for(let i = 0; i < arr.length; i++) {
         createListItem(arr[i]); // рисует весь массив сразу, и потом дублирует 
@@ -58,3 +60,14 @@ function createListItem(obj) {
     button.className = "destroy";
     div.append(button);
 };
+
+function deleteTask(event) {
+        if (event.target.className != 'destroy') return;
+        
+        let nodeTask = event.target.closest("li");
+        let idTask = +nodeTask.id;
+        nodeTask.remove();
+        let delTask = tasksList.find(item => item.id == idTask);
+        let posInTaskList = tasksList.findIndex(currentValue => currentValue == delTask);
+        tasksList.splice(posInTaskList,1);
+}
