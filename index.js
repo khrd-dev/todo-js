@@ -16,16 +16,17 @@ const newTodo = document.querySelector(".new-todo");
 const todoapp = document.querySelector(".todoapp");
 
 document.addEventListener("click", deleteTask);
+document.addEventListener("click", toggleTask);
+
 function renderTasks(arr) {
-    /* for(let i = 0; i < arr.length; i++) {
-        createListItem(arr[i]); // рисует весь массив сразу, и потом дублирует 
-    } */                        //при добавлении новой задачи
-    let idObject = arr.length - 1;
-    createListItem(arr[idObject]); //рисует один таск
+    const idObject = arr.length - 1;
+    createListItem(arr[idObject]); 
 }
 
 function getId() {
-    let idValue = tasksList.length + 1;
+    //let idValue = tasksList.length + 1;
+    //let rand = 0.5 + Math.random() * 10000000
+    let idValue = 0.5 + Math.random() * 1e17
     return idValue;
 }
 
@@ -62,12 +63,30 @@ function createListItem(obj) {
 };
 
 function deleteTask(event) {
-        if (event.target.className != 'destroy') return;
-        
-        let nodeTask = event.target.closest("li");
+    if (event.target.className != 'destroy') return;
+    let nodeTask = event.target.closest("li");
+    let idTask = +nodeTask.id;
+    nodeTask.remove();
+    let delTask = tasksList.find(item => item.id == idTask);
+    let posInTaskList = tasksList.findIndex(currentValue => currentValue == delTask);
+    tasksList.splice(posInTaskList,1);
+};
+
+function toggleTask(event) {
+    if (event.target.className != 'toggle') return;
+    //event.target.completed = 'true';
+    let nodeTask = event.target.closest("li");
+    if (nodeTask.className !== 'completed') {
+        nodeTask.className = 'completed';
         let idTask = +nodeTask.id;
-        nodeTask.remove();
         let delTask = tasksList.find(item => item.id == idTask);
         let posInTaskList = tasksList.findIndex(currentValue => currentValue == delTask);
-        tasksList.splice(posInTaskList,1);
+        tasksList[posInTaskList].completed = true;
+    } else {
+        nodeTask.className = '';
+        let idTask = +nodeTask.id;
+        let delTask = tasksList.find(item => item.id == idTask);
+        let posInTaskList = tasksList.findIndex(currentValue => currentValue == delTask);
+        tasksList[posInTaskList].completed = false;
+    };
 }
