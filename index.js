@@ -9,7 +9,8 @@ let tasksList = [
     { id: "5", text: "написать несколько учебных проектов", completed: false },
     { id: "6", text: "пройти собеседование", completed: false },
     { id: "7", text: "получить работу", completed: false } */
-    ];
+];
+
 let tasksActive = [];
 let tasksCompleted = [];
 
@@ -18,10 +19,12 @@ const newTodo = document.querySelector(".new-todo");
 const todoapp = document.querySelector(".todoapp");
 const todoCount = document.querySelector(".todo-count");
 const clearCompleted = document.querySelector(".clear-completed");
+const filtersTodo = document.querySelector(".filters");
 
 document.addEventListener("click", deleteTask);
 document.addEventListener("click", toggleTask);
 document.addEventListener("click", deleteComletedTasks);
+document.addEventListener("click", filterTasks);
 
 /*function renderTasks(arr) {
     const idObject = arr.length - 1;
@@ -118,7 +121,7 @@ function countActiveTasks() {
 }
 
 function deleteComletedTasks(event) {
-    if (event.target.className != 'clear-completed') return;
+    if (event.target.className !== 'clear-completed') return;
     tasksList = tasksActive;
     renderTasks(tasksList);
     tasksCompleted = [];
@@ -130,5 +133,48 @@ function checkClearCompleted() {
         clearCompleted.style.display = "block";
     } else {
         clearCompleted.style.display = "none";
+    }
+}
+
+function filterTasks(event) {
+    // let parentUl = event.target.closest("ul");
+    // if (parentUl.className !== 'filters') return;
+    let lnk = event.target.id;
+    let firstLi = filtersTodo.firstElementChild;
+    let nextLi = firstLi.nextElementSibling;
+    let lastLi = filtersTodo.lastElementChild;
+    switch(lnk) {
+        case 'all':
+            if (event.target.className == 'selected') break;
+            firstLi.firstElementChild.classList.remove("selected");
+            nextLi.firstElementChild.classList.remove("selected");
+            lastLi.lastElementChild.classList.remove("selected");
+            firstLi.firstElementChild.classList.add("all");
+            nextLi.firstElementChild.classList.add("active");
+            lastLi.lastElementChild.classList.add("completed");
+            event.target.classList.add('selected');
+            renderTasks(tasksList);
+            break;
+        case 'active':
+            if (event.target.className == 'selected') break;
+            firstLi.firstElementChild.classList.remove("selected");
+            nextLi.firstElementChild.classList.remove("selected");
+            lastLi.lastElementChild.classList.remove("selected");
+            firstLi.firstElementChild.classList.add("all");
+            nextLi.firstElementChild.classList.add("active");
+            lastLi.lastElementChild.classList.add("completed");
+            event.target.classList.add('selected');
+            renderTasks(tasksActive);
+            break;
+        case 'completed':
+            firstLi.firstElementChild.classList.remove("selected");
+            nextLi.firstElementChild.classList.remove("selected");
+            lastLi.lastElementChild.classList.remove("selected");
+            firstLi.firstElementChild.classList.add("all");
+            nextLi.firstElementChild.classList.add("active");
+            lastLi.lastElementChild.classList.add("completed");
+            event.target.classList.add('selected');
+            renderTasks(tasksCompleted);
+            break;
     }
 }
