@@ -1,15 +1,5 @@
 
-//inputTodo = document.querySelector(".new-todo");
-const task = { id: "1", text: "выучить html", completed: true };
-let tasksList = [
-/*     { id: "1", text: "выучить html", completed: true },
-    { id: "2", text: "выучить css", completed: true },
-    { id: "3", text: "выучить js", completed: false },
-    { id: "4", text: "выучить фреймворк", completed: false },
-    { id: "5", text: "написать несколько учебных проектов", completed: false },
-    { id: "6", text: "пройти собеседование", completed: false },
-    { id: "7", text: "получить работу", completed: false } */
-    ];
+let tasksList = [];
 let tasksActive = [];
 let tasksCompleted = [];
 
@@ -18,15 +8,20 @@ const newTodo = document.querySelector(".new-todo");
 const todoapp = document.querySelector(".todoapp");
 const todoCount = document.querySelector(".todo-count");
 const clearCompleted = document.querySelector(".clear-completed");
+const filtersTodo = document.querySelector(".filters");
+const footerTodo = document.querySelector(".footer");
+const footerTodoAll = document.getElementById('all');
+const footerTodoActive = document.getElementById('active');
+const footerTodoCompleted = document.getElementById('completed');
 
 document.addEventListener("click", deleteTask);
 document.addEventListener("click", toggleTask);
 document.addEventListener("click", deleteComletedTasks);
+document.addEventListener("click", filterTasks);
 
-/*function renderTasks(arr) {
-    const idObject = arr.length - 1;
-    createListItem(arr[idObject]);
-}*/
+updateLocalStorage();
+checkFilter();
+countActiveTasks();
 
 function renderTasks(arr) {
     todoList.innerHTML = '';
@@ -36,8 +31,6 @@ function renderTasks(arr) {
 }
 
 function getId() {
-    //let idValue = tasksList.length + 1;
-    //let rand = 0.5 + Math.random() * 10000000
     let idValue = 0.5 + Math.random() * 1e17
     return idValue;
 }
@@ -48,6 +41,7 @@ function createNewTask() {
         id : getId(), text : newTodo.value, completed : false
         };
     tasksList.push(obj);
+    localStorage.tasksList = JSON.stringify(tasksList);
     renderTasks(tasksList);
     newTodo.value = "";
     countActiveTasks();
@@ -58,6 +52,7 @@ function createListItem(obj) {
     let li = document.createElement('li');
     li.id = obj.id;
     li.completed = obj.completed;
+    if (li.completed == true) li.classList.add("completed");
     todoList.append(li)
     let div = document.createElement('div');
     div.className = "view";
@@ -83,12 +78,12 @@ function deleteTask(event) {
     let delTask = tasksList.find(item => item.id == idTask);
     let posInTaskList = tasksList.findIndex(currentValue => currentValue == delTask);
     tasksList.splice(posInTaskList,1);
+    localStorage.tasksList = JSON.stringify(tasksList);
     countActiveTasks();
 };
 
 function toggleTask(event) {
     if (event.target.className != 'toggle') return;
-    //event.target.completed = 'true';
     let nodeTask = event.target.closest("li");
     if (nodeTask.className !== 'completed') {
         nodeTask.className = 'completed';
@@ -96,33 +91,40 @@ function toggleTask(event) {
         let delTask = tasksList.find(item => item.id == idTask);
         let posInTaskList = tasksList.findIndex(currentValue => currentValue == delTask);
         tasksList[posInTaskList].completed = true;
+        localStorage.tasksList = JSON.stringify(tasksList);
     } else {
         nodeTask.className = '';
         let idTask = +nodeTask.id;
         let delTask = tasksList.find(item => item.id == idTask);
         let posInTaskList = tasksList.findIndex(currentValue => currentValue == delTask);
         tasksList[posInTaskList].completed = false;
+        localStorage.tasksList = JSON.stringify(tasksList);
     };
     countActiveTasks();
 }
 
 function countActiveTasks() {
     tasksActive = tasksList.filter(item => item.completed == false);
+    localStorage.tasksActive = JSON.stringify(tasksActive);
     tasksCompleted = tasksList.filter(item => item.completed == true);
+    localStorage.tasksCompleted = JSON.stringify(tasksCompleted);
     let countAct = tasksActive.length;
     if (countAct !== 0) {
         todoCount.textContent = countAct + ' items left';
         todoCount.style.display = "block";
     } else todoCount.style.display = "none";
     checkClearCompleted();
+    checkFooter();
 }
 
 function deleteComletedTasks(event) {
-    if (event.target.className != 'clear-completed') return;
+    if (event.target.className !== 'clear-completed') return;
     tasksList = tasksActive;
+    localStorage.tasksList = JSON.stringify(tasksList);
     renderTasks(tasksList);
     tasksCompleted = [];
     checkClearCompleted();
+    checkFooter();
 }
 
 function checkClearCompleted() {
@@ -130,5 +132,79 @@ function checkClearCompleted() {
         clearCompleted.style.display = "block";
     } else {
         clearCompleted.style.display = "none";
+    }
+}
+
+function filterTasks(event) {
+    let lnk = event.target.id;
+    let firstLi = filtersTodo.firstElementChild;
+    let nextLi = firstLi.nextElementSibling;
+    let lastLi = filtersTodo.lastElementChild;
+    switch(lnk) {
+        case 'all':
+            if (event.target.className == 'selected') break;
+            firstLi.firstElementChild.classList.remove("selected");
+            nextLi.firstElementChild.classList.remove("selected");
+            lastLi.lastElementChild.classList.remove("selected");
+            firstLi.firstElementChild.classList.add("all");
+            nextLi.firstElementChild.classList.add("active");
+            lastLi.lastElementChild.classList.add("completed");
+            event.target.classList.add('selected');
+            renderTasks(tasksList);
+            break;
+        case 'active':
+            if (event.target.className == 'selected') break;
+            firstLi.firstElementChild.classList.remove("selected");
+            nextLi.firstElementChild.classList.remove("selected");
+            lastLi.lastElementChild.classList.remove("selected");
+            firstLi.firstElementChild.classList.add("all");
+            nextLi.firstElementChild.classList.add("active");
+            lastLi.lastElementChild.classList.add("completed");
+            event.target.classList.add('selected');
+            renderTasks(tasksActive);
+            break;
+        case 'completed':
+            firstLi.firstElementChild.classList.remove("selected");
+            nextLi.firstElementChild.classList.remove("selected");
+            lastLi.lastElementChild.classList.remove("selected");
+            firstLi.firstElementChild.classList.add("all");
+            nextLi.firstElementChild.classList.add("active");
+            lastLi.lastElementChild.classList.add("completed");
+            event.target.classList.add('selected');
+            renderTasks(tasksCompleted);
+            break;
+    }
+}
+
+function checkFooter() {
+    if (tasksList.length == 0) {
+        footerTodo.style.display = "none";
+    } else {
+        footerTodo.style.display = "block";
+    }
+}
+
+function updateLocalStorage() {
+    tasksList = JSON.parse(localStorage.tasksList);
+    tasksCompleted = JSON.parse(localStorage.tasksCompleted);
+    tasksActive = JSON.parse(localStorage.tasksActive);
+}
+
+function checkFilter() {
+    let currentLocation = window.location.hash;
+    switch(currentLocation) {
+        case '#/':
+            renderTasks(tasksList);
+            break;
+        case '#/active':
+            renderTasks(tasksActive);
+            footerTodoAll.classList.remove("selected");
+            footerTodoActive.classList.add("selected");
+            break;
+        case '#/completed':
+            renderTasks(tasksCompleted);
+            footerTodoAll.classList.remove("selected");
+            footerTodoCompleted.classList.add("selected");
+            break;
     }
 }
